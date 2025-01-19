@@ -1,6 +1,6 @@
 
 from pydantic import BaseModel
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 
 class CustomerBase(SQLModel):
     name: str = Field(default=None)
@@ -16,6 +16,7 @@ class CustomerUpdate(CustomerBase):
 
 class Customer(CustomerBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    transactions: list["Transaction"] = Relationship(back_populates="customer")
     
     
 class TransactionBase(SQLModel):
@@ -25,7 +26,11 @@ class TransactionBase(SQLModel):
 
 class Transaction(TransactionBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
+    customer_id: int = Field(foreign_key="customer.id")
+    customer: Customer = Relationship(back_populates="transactions")
 
+class TransactionCreate(TransactionBase):
+    customer_id: int = Field(foreign_key="customer.id")
     
 class Invoice(BaseModel):
     id: int
